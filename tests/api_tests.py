@@ -124,7 +124,7 @@ class TestAPI(unittest.TestCase):
         data = json.loads(response.data.decode("ascii"))
         self.assertEqual(len(data), 1)
 
-        postA = data[0]
+        postB = data[0]
         self.assertEqual(postB["title"], "Example Post B")
         self.assertEqual(postB["body"], "To be kept")    
 

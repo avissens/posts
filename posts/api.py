@@ -57,6 +57,6 @@ def post_delete(id):
     session.commit()
     
     # Return a message
-    message = "Delelted post with id {}".format(id)
+    message = "Deleted post with id {}".format(id)
     data = json.dumps({"message": message})
     return Response(data, 200, mimetype="application/json")
