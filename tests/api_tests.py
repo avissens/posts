@@ -123,9 +123,12 @@ class TestAPI(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.mimetype, "application/json")
-
         data = json.loads(response.data.decode("ascii"))
         self.assertEqual(data["message"], "Deleted post with id 1")
+
+        # Assert that there is only one post in the database
+        posts = session.query(models.Post).all()
+        self.assertEqual(len(posts), 1)
 
     def test_get_posts_with_title(self):
         """ Filtering posts by title """
@@ -261,29 +264,30 @@ class TestAPI(unittest.TestCase):
         
     def test_edit_post(self):
         """ Editing an existing post """
-        post = models.Post(title="Example Post ", body="Just a test")
-
+        post = models.Post(title="Example Post", body="Just a test")
         session.add(post)
         session.commit()
 
-        response = self.client.delete("/api/posts/{}".format(post.id),
-            headers=[("Accept", "application/json")]
-        )
-        
         data = {
             "title": "Example Post Edited",
             "body": "Just a test Edited"
         }
-
+        
+        response = self.client.put("/api/posts/{}".format(post.id),
+            data=json.dumps(data),
+            content_type="application/json",
+            headers=[("Accept", "application/json")]
+        )
+      
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.mimetype, "application/json")
         self.assertEqual(urlparse(response.headers.get("Location")).path,
-                         "/api/posts/1")
+                         "/api/posts/{}".format(post.id))
 
         data = json.loads(response.data.decode("ascii"))
         self.assertEqual(data["id"], 1)
-        self.assertEqual(data["title"], "Example Post")
-        self.assertEqual(data["body"], "Just a test")
+        self.assertEqual(data["title"], "Example Post Edited")
+        self.assertEqual(data["body"], "Just a test Edited")
 
         posts = session.query(models.Post).all()
         self.assertEqual(len(posts), 1)

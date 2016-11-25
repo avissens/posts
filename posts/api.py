@@ -24,11 +24,16 @@ def posts_get():
 
     # Get the querystring arguments
     title_like = request.args.get("title_like")
-
+    body_like = request.args.get("body_like")
+    
     # Get and filter the posts from the database
     posts = session.query(models.Post)
     if title_like:
         posts = posts.filter(models.Post.title.contains(title_like))
+    posts = posts.order_by(models.Post.id)
+    
+    if body_like:
+        posts = posts.filter(models.Post.body.contains(body_like))
     posts = posts.order_by(models.Post.id)
 
     # Convert the posts to JSON and return a response
@@ -120,13 +125,13 @@ def post_edit(id):
 
     # Get the post
     post = session.query(models.Post).get(id)
+    
     # Edit the post with new data
-    session.merge(post)
+    post.title = data["title"]
+    post.body = data["body"]
     session.commit()
-  
-    # Return a 201 Created, containing the post as JSON and with the
-    # Location header set to the location of the post
+    
     data = json.dumps(post.as_dictionary())
     headers = {"Location": url_for("post_get", id=post.id)}
-    return Response(data, 201, headers=headers,
+    return Response(data, 200, headers=headers,
                     mimetype="application/json")
